@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Category {
+public enum Genres {
     SHONEN("Shonen", "Action-packed stories aimed at young boys"),
     SHOJO("Shojo", "Romance and drama-focused manga for young girls"),
     SEINEN("Seinen", "Mature and complex themes for adult men"),

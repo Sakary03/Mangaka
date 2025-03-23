@@ -1,9 +1,12 @@
 package com.graduation.mangaka.dto.request;
 
+import com.graduation.mangaka.model.Manga;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.validation.constraints.NotBlank;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,5 +20,25 @@ public class MangaRequestDTO {
     String description;
     @NotBlank(message = "Overview is required")
     String overview;
+    @NotBlank(message = "Genres is required")
+    List<String> genres;
 
+    String posterUrl;
+    String backgroundUrl;
+
+
+
+    public Manga toManga(){
+        Manga manga = new Manga();
+        manga.setTitle(title);
+        manga.setAuthor(author);
+        manga.setDescription(description);
+        manga.setOverview(overview);
+        manga.setPosterUrl(posterUrl);
+        manga.setBackgroundUrl(backgroundUrl);
+        for (String genre : genres) {
+            manga.addGenres(genre);
+        }
+        return manga;
+    }
 }

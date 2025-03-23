@@ -1,5 +1,6 @@
 package com.graduation.mangaka.model;
 
+import com.graduation.mangaka.model.TypeAndRole.Genres;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,4 +49,14 @@ public class Manga {
 
     @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MangaChapter> chapters;
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @Column(name = "genres", columnDefinition = "text[]")
+    private List<Genres> genres;
+
+    public List<Genres> addGenres(String genre) {
+        this.genres.add(Genres.valueOf(genre));
+        return this.genres;
+    }
 }
