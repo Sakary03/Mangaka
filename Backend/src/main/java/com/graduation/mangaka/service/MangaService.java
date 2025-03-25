@@ -110,4 +110,8 @@ public class MangaService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public Manga GetMangaById(Long id) {
+        return mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
+    }
 }

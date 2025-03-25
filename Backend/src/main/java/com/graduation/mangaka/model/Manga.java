@@ -1,5 +1,6 @@
 package com.graduation.mangaka.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,19 +28,19 @@ public class Manga {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String overview;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
     private String author;
 
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String posterUrl;
 
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String backgroundUrl;
 
     @CreationTimestamp
@@ -48,15 +50,20 @@ public class Manga {
     private Timestamp updatedAt;
 
     @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<MangaChapter> chapters;
 
     @ElementCollection
+    @CollectionTable(name = "manga_genres", joinColumns = @JoinColumn(name = "manga_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "genres", columnDefinition = "text[]")
+    @Column(name = "genre")
     private List<Genres> genres;
 
     public List<Genres> addGenres(String genre) {
-        this.genres.add(Genres.valueOf(genre));
-        return this.genres;
+        if (this.genres == null) {
+            this.genres = new ArrayList<>();
+        }
+        genres.add(Genres.valueOf(genre));
+        return genres;
     }
 }

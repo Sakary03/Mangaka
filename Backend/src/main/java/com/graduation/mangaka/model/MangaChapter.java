@@ -1,5 +1,6 @@
 package com.graduation.mangaka.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,5 +43,6 @@ public class MangaChapter {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
+    @JsonBackReference
     private Manga manga;
 }

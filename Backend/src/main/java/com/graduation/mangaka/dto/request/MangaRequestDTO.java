@@ -36,7 +36,9 @@ public class MangaRequestDTO {
         manga.setOverview(overview);
         manga.setPosterUrl(posterUrl);
         manga.setBackgroundUrl(backgroundUrl);
+        System.out.println("Number of genre: "+ genres.size());
         for (String genre : genres) {
+            System.out.print("Added genre: "+ genre);
             manga.addGenres(genre);
         }
         return manga;

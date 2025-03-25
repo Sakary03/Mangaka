@@ -25,7 +25,9 @@ public class MangaController {
                                              @RequestParam("poster")MultipartFile poster,
                                              @RequestParam("background") MultipartFile background) {
             mangaRequestDTO.setPosterUrl(cloudinaryService.uploadImage(poster).getUrl());
+            System.out.println("Upload poster successfully");
             mangaRequestDTO.setBackgroundUrl(cloudinaryService.uploadImage(background).getUrl());
+            System.out.println("Upload background successfully");
             return ResponseEntity.ok().body(mangaService.addManga(mangaRequestDTO));
     }
 
@@ -51,4 +53,10 @@ public class MangaController {
                                          @RequestParam("limit") int limit) {
         return ResponseEntity.ok().body(mangaService.searchManga(searchMangaDTO, offset, limit));
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> GetMangaById(@PathVariable Long id) {
+        return ResponseEntity.ok().body(mangaService.GetMangaById(id));
+    }
+
+
 }
