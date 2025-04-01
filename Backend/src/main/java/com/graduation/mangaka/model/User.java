@@ -1,14 +1,13 @@
 package com.graduation.mangaka.model;
 
+import com.graduation.mangaka.model.TypeAndRole.UserRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Table(name="users")
@@ -16,6 +15,8 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment ID
@@ -30,8 +31,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
-    private String phone;
+    @Column(nullable = false)
+    private Date dob;
 
     @Column(nullable = false)
     private String password;
@@ -44,4 +45,8 @@ public class User {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
 }

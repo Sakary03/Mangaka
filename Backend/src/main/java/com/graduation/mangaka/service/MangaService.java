@@ -44,8 +44,8 @@ public class MangaService {
             if (mangaRequestDTO.getTitle() != null) manga.setTitle(mangaRequestDTO.getTitle());
             if (mangaRequestDTO.getOverview() != null) manga.setOverview(mangaRequestDTO.getOverview());
             if (mangaRequestDTO.getDescription() != null) manga.setDescription(mangaRequestDTO.getDescription());
-            if (!mangaRequestDTO.getGenres().isEmpty()) {
-                manga.setGenres(Collections.emptyList());
+            if (mangaRequestDTO.getGenres()!=null) {
+                manga.setGenres(new ArrayList<>());
                 for (String genre : mangaRequestDTO.getGenres()) {
                     manga.addGenres(genre);
                 }
