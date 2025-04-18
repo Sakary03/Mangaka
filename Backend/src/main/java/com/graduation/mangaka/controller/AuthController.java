@@ -34,17 +34,20 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginDto) {
         // Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                loginDto.getUsername(), loginDto.getPassword());
+                loginDto.getEmail(), loginDto.getPassword());
 
+        System.out.println("Check 1");
         // xác thực người dùng => cần viết hàm loadUserByUsername
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        System.out.println("Check 2");
 
         // create a token
         String access_token = this.securityUtil.createToken(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
         loginResponseDTO.setAccessToken(access_token);
-        loginResponseDTO.setUserInfo(userRepository.findByUserName(loginDto.getUsername()));
+        loginResponseDTO.setUserInfo(userRepository.findByEmail(loginDto.getEmail()));
         return ResponseEntity.ok().body(loginResponseDTO);
     }
 

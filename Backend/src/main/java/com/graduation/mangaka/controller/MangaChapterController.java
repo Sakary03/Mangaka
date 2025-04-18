@@ -24,12 +24,17 @@ public class MangaChapterController {
     @PostMapping("/{manga_id}/add-chapter")
     public ResponseEntity<?> addChapter(@PathVariable("manga_id") Long manga_id,
                                         @RequestParam("pages") List<MultipartFile> pages,
-                                        @RequestParam("chapter_index") int chapterIndex) {
+                                        @RequestParam("chapter_index") int chapterIndex,
+                                        @RequestParam("title") String title) {
         List<String> listPages=new ArrayList<>();
         for (MultipartFile page: pages) {
             listPages.add(cloudinaryService.uploadImage(page).getUrl());
         }
-        return ResponseEntity.ok().body(mangaChapterService.addChapter(manga_id, listPages, chapterIndex));
+        MangaChapter newChapter=mangaChapterService.addChapter(manga_id, listPages, chapterIndex, title);
+        if (newChapter == null) {
+            return ResponseEntity.badRequest().body("Manga with id " + manga_id + " already exists chapter index " + chapterIndex);
+        }
+        return ResponseEntity.ok().body(newChapter);
     }
 
     @GetMapping("{manga_id}/get-chapter/{chapter_index}")
@@ -42,15 +47,21 @@ public class MangaChapterController {
         return ResponseEntity.ok().body(mangaChapterService.getChapter(mangaId, chapterIndex));
     }
 
+    @GetMapping("{manga_id}")
+    public ResponseEntity<?> getAllChapter(@PathVariable("manga_id") Long mangaId) {
+        System.out.println("mangaId:"+mangaId);
+        return ResponseEntity.ok().body(mangaChapterService.getAllChapter(mangaId));
+    }
     @PutMapping("{manga_id}/update-chapter/{chapter_index}")
     public ResponseEntity<?> updateChapter(@PathVariable("manga_id") Long mangaId,
                                            @PathVariable("chapter_index") int chapterIndex,
-                                           @RequestParam("pages") List<MultipartFile> pages) {
+                                           @RequestParam("pages") List<MultipartFile> pages,
+                                           @RequestParam("title") String title) {
         List<String> listPages=new ArrayList<>();
         for (MultipartFile page: pages) {
             listPages.add(cloudinaryService.uploadImage(page).getUrl());
         }
-        return ResponseEntity.ok().body(mangaChapterService.updateChapter(mangaId, listPages, chapterIndex));
+        return ResponseEntity.ok().body(mangaChapterService.updateChapter(mangaId, listPages, chapterIndex, title));
     }
 
     @DeleteMapping("{manga_id}/update-chapter/{chapter_index}")

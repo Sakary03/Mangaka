@@ -42,7 +42,7 @@ public class MangaController {
         return ResponseEntity.ok().body(mangaService.deleteManga(id));
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> GetManga(@RequestParam("offset") int offset,
                                       @RequestParam("limit") int limit) {
         return ResponseEntity.ok().body(mangaService.getAllManga(offset, limit));
@@ -58,5 +58,9 @@ public class MangaController {
         return ResponseEntity.ok().body(mangaService.GetMangaById(id));
     }
 
+//    @GetMapping("/search")
+//    public ResponseEntity<?> SearchMangaByKeyword(@RequestParam("keyword") String keyword) {
+//        return null;
+//    }
 
 }

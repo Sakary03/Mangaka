@@ -24,15 +24,14 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     public ResponseEntity<?> login(LoginRequest loginRequest) {
-        User userOptional = userRepository.findByUserName(loginRequest.getUsername());
+        User userOptional = userRepository.findByEmail(loginRequest.getEmail());
         if (userOptional!=null && passwordEncoder.matches(loginRequest.getPassword(), userOptional.getPassword())) {
-            String token = jwtUtil.generateToken(userOptional.getUserName());
+            String token = jwtUtil.generateToken(userOptional.getEmail());
             return ResponseEntity.ok(token);
         } else {
-            return ResponseEntity.status(401).body("Invalid username or password");
+            return ResponseEntity.status(401).body("Invalid email or password");
         }
     }
-
     public ResponseEntity<?> signup(SignupRequest signupRequest) {
         if (userRepository.findByUserName(signupRequest.getUsername())!=null) {
             return ResponseEntity.status(409).body("Username already exists");

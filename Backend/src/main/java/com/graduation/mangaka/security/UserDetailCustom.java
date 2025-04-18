@@ -19,24 +19,23 @@ import java.util.List;
 public class UserDetailCustom implements UserDetailsService {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUserName(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email); // ✅ use email
+        System.out.println("User found: "+ user.getId());
         if (user == null) {
-            throw new UsernameNotFoundException("Invalid username/password");
+            throw new UsernameNotFoundException("Invalid email or password");
         }
-        UserRole userRole = user.getRole(); // Role (e.g., Role.USER)
+        System.out.println("User found: 2 "+ user.getId());
+        UserRole userRole = user.getRole();
         List<GrantedAuthority> authorities = Collections.singletonList(
                 new SimpleGrantedAuthority(userRole.toAuthority())
         );
-
+        System.out.println("User found: 3 "+  authorities);
         return new org.springframework.security.core.userdetails.User(
-                user.getUserName(),
+                user.getEmail(), // ✅ use email as username in security context
                 user.getPassword(),
                 authorities
         );

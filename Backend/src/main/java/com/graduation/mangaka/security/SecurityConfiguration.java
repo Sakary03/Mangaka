@@ -54,7 +54,8 @@ public class SecurityConfiguration {
             "/api/user/**",
             "/api/category/**",
             "/api/chapter/**",
-
+            "/outer/**",
+            "/outer/cloudinary/upload"
     };
     @Bean
     public SecurityFilterChain filterChain(
@@ -72,6 +73,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET,"/swagger-ui/**").permitAll()
                                 .requestMatchers("/v3/api-docs").permitAll()
                                 .requestMatchers("/api/manga/").permitAll()
+                                .requestMatchers("/outer/**").permitAll()
                                 .requestMatchers(whiteList).permitAll()
                                 .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

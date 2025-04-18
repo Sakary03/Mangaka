@@ -1,6 +1,7 @@
 package com.graduation.mangaka.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,7 +12,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "manga_chapter")
+@Table(name = "manga_chapter",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"manga_id", "chapterIndex"})
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,6 +34,9 @@ public class MangaChapter {
     @Column(name = "page_url")
     private List<String> pages;
 
+    @Column(name="title")
+    private String title;
+
     @Column(nullable = false)
     private int readTimes = 0;
 
@@ -45,4 +51,11 @@ public class MangaChapter {
     @JoinColumn(name = "manga_id", nullable = false)
     @JsonBackReference
     private Manga manga;
+
+    @PostConstruct
+    public void init() {
+        if (this.title == null) {
+            this.title = "Chapter "+ String.valueOf(this.chapterIndex);
+        }
+    }
 }

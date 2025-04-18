@@ -114,4 +114,9 @@ public class MangaService {
     public Manga GetMangaById(Long id) {
         return mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
     }
+
+    public List<Manga> SearchManga(SearchMangaDTO params) {
+        if (params.getTitle() != null && !params.getTitle().isEmpty()) {}
+        return null;
+    }
 }
