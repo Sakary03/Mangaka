@@ -127,6 +127,12 @@ public class MangaService {
         return mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
     }
 
+    public Manga IncreaseReadTimes(Long id) {
+        Manga manga = mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
+        manga.setReadTimes(manga.getReadTimes()+1);
+        return mangaRepository.save(manga);
+    }
+
     public List<Manga> SearchManga(SearchMangaDTO params) {
         if (params.getTitle() != null && !params.getTitle().isEmpty()) {}
         return null;

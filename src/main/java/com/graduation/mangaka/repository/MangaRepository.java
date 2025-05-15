@@ -12,4 +12,5 @@ import java.util.List;
 
 @Repository
 public interface MangaRepository extends JpaRepository<Manga, Long>, JpaSpecificationExecutor<Manga> {
+    Manga getMangaById(Long id);
 }

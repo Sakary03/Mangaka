@@ -57,8 +57,10 @@ public class SecurityConfiguration {
             "/outer/**",
             "/outer/cloudinary/upload",
             "/manga/**",
+            "/chapter/**",
             "/comments/**",
-            "/user/**"
+            "/user/**",
+            "/ws/**",
     };
     @Bean
     public SecurityFilterChain filterChain(
@@ -78,6 +80,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/manga/").permitAll()
                                 .requestMatchers("/outer/**").permitAll()
                                 .requestMatchers("/manga/**").permitAll()
+                                .requestMatchers("/chapter/**").permitAll()
                                 .requestMatchers("/comments/**").permitAll()
                                 .requestMatchers(whiteList).permitAll()
                                 .anyRequest().authenticated())

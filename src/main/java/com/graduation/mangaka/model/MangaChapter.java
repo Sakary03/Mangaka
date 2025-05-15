@@ -1,6 +1,7 @@
 package com.graduation.mangaka.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,7 +50,7 @@ public class MangaChapter {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Manga manga;
 
     @PostConstruct

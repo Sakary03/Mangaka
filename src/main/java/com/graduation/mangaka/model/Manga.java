@@ -1,5 +1,6 @@
 package com.graduation.mangaka.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
 import jakarta.persistence.*;
@@ -50,7 +51,7 @@ public class Manga {
     private Timestamp updatedAt;
 
     @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnore
     private List<MangaChapter> chapters;
 
     @ElementCollection
@@ -66,4 +67,11 @@ public class Manga {
         genres.add(Genres.valueOf(genre));
         return genres;
     }
+
+    @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<UserFollow> followers;
+
+    @Column(nullable = false)
+    private int readTimes=0;
 }
