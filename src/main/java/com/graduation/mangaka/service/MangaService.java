@@ -20,10 +20,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
 
 @Service
 public class MangaService {
@@ -34,6 +32,16 @@ public class MangaService {
 
     @Autowired
     private UserRepository userRepository;
+
+    public static List<Genres> getRandomGenres() {
+        List<Genres> allGenres = new ArrayList<>(Arrays.asList(Genres.values()));
+        Collections.shuffle(allGenres);
+
+        int count = new Random().nextInt(3) + 6;
+
+        return allGenres.subList(0, count);
+    }
+
     public Manga addManga(MangaRequestDTO mangaRequestDTO) {
         try {
             if (mangaRequestDTO.getUserId() == null) {
@@ -42,6 +50,9 @@ public class MangaService {
             final Long userId = mangaRequestDTO.getUserId();
             final User user =  userRepository.findById(mangaRequestDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
             Manga manga = mangaRequestDTO.toManga();
+            List<Genres> genres = getRandomGenres();
+            manga.setGenres(genres);
+
             if (user.getRole().equals(UserRole.USER)) {
                 manga.setUploadedBy(user);
                 manga.setStatus(MangaStatus.PENDING);

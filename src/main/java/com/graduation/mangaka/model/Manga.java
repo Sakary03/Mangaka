@@ -61,6 +61,11 @@ public class Manga {
     @Column(name = "genre")
     private List<Genres> genres;
 
+    public List<Genres> setGenres(List<Genres> genres) {
+        this.genres = genres;
+        return genres;
+    }
+
     public List<Genres> addGenres(String genre) {
         if (this.genres == null) {
             this.genres = new ArrayList<>();
