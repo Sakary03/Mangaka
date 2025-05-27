@@ -26,7 +26,8 @@ public class MangaRequestDTO {
     String posterUrl;
     String backgroundUrl;
 
-
+    @NotBlank(message = "UserId is required")
+    Long userId;
 
     public Manga toManga(){
         Manga manga = new Manga();

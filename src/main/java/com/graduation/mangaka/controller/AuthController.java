@@ -1,5 +1,6 @@
 package com.graduation.mangaka.controller;
 
+import com.graduation.mangaka.dto.request.ChangePasswordRequestDTO;
 import com.graduation.mangaka.dto.request.LoginRequest;
 import com.graduation.mangaka.dto.request.SignupRequest;
 import com.graduation.mangaka.dto.response.LoginResponseDTO;
@@ -36,11 +37,8 @@ public class AuthController {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDto.getEmail(), loginDto.getPassword());
 
-        System.out.println("Check 1");
         // xác thực người dùng => cần viết hàm loadUserByUsername
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-        System.out.println("Check 2");
 
         // create a token
         String access_token = this.securityUtil.createToken(authentication);
@@ -60,5 +58,10 @@ public class AuthController {
         } else {
             return ResponseEntity.badRequest().body("Email hoặc tên người dùng đã tồn tại");
         }
+    }
+
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordRequestDTO requestDTO) {
+        return ResponseEntity.ok().body(userService.changePassword(id, requestDTO));
     }
 }

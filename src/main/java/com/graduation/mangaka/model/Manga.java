@@ -3,6 +3,7 @@ package com.graduation.mangaka.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
+import com.graduation.mangaka.model.TypeAndRole.MangaStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -74,4 +75,17 @@ public class Manga {
 
     @Column(nullable = false)
     private int readTimes=0;
+
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by", nullable = false)
+    private User uploadedBy;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private MangaStatus status=MangaStatus.PENDING;
+
+    @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<ReadingHistory> readingHistories;
 }

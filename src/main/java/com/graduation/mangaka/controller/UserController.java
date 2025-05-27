@@ -23,9 +23,10 @@ public class UserController {
     public ResponseEntity<?> GetAllUserInfo(@RequestParam int offset, @RequestParam int limit){
         return ResponseEntity.ok().body(userService.GetAllUserByBatch(offset, limit));
     }
-    @PostMapping("/{id}/update")
+    @PutMapping("/{id}/update")
     public ResponseEntity<?> UpdateUser(@RequestBody UserRequestDTO userRequestDTO,
                                      @PathVariable Long id){
         return ResponseEntity.ok().body(userService.UpdateUser(userRequestDTO, id));
     }
+
 }

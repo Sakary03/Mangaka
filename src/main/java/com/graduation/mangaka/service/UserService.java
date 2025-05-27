@@ -1,5 +1,6 @@
 package com.graduation.mangaka.service;
 
+import com.graduation.mangaka.dto.request.ChangePasswordRequestDTO;
 import com.graduation.mangaka.dto.request.SignupRequest;
 import com.graduation.mangaka.dto.request.UserRequestDTO;
 import com.graduation.mangaka.model.TypeAndRole.UserRole;
@@ -49,13 +50,40 @@ public class UserService {
         return userRepository.findAll(pageable).getContent();
     }
 
+
     public User UpdateUser(UserRequestDTO userRequestDTO, Long id) {
-        User user=userRepository.findById(id).orElse(null);
-        if (user==null) return null;
-        else {
-            user=userRequestDTO.userRequestDtoToUser();
-            userRepository.save(user);
-            return user;
+        User existingUser = userRepository.findById(id).orElse(null);
+        if (existingUser == null) {
+            return null;
         }
+
+        existingUser.setUserName(userRequestDTO.getUsername());
+        existingUser.setEmail(userRequestDTO.getEmail());
+        existingUser.setFullName(userRequestDTO.getName());
+        existingUser.setDob(userRequestDTO.getDate());
+        existingUser.setAddress(userRequestDTO.getAddress());
+        existingUser.setAvatarUrl(userRequestDTO.getAvatar());
+
+        return userRepository.save(existingUser);
+    }
+
+    public boolean changePassword(Long userId, ChangePasswordRequestDTO request) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return false;
+        }
+
+        if (!request.getNewPassword().equals(request.getNewPassword())) {
+            return false;
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return true;
     }
 }

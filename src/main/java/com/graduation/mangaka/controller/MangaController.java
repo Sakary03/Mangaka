@@ -71,9 +71,8 @@ public class MangaController {
         return ResponseEntity.ok().body(mangaService.IncreaseReadTimes(id));
     }
 
-//    @GetMapping("/search")
-//    public ResponseEntity<?> SearchMangaByKeyword(@RequestParam("keyword") String keyword) {
-//        return null;
-//    }
-
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> ChangeMangaStatus(@PathVariable Long id, @RequestParam("status") String status) {
+        return ResponseEntity.ok().body(mangaService.ChangeMangaStatus(id, status));
+    }
 }

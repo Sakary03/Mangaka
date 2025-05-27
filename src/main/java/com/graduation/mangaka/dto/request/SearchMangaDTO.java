@@ -13,5 +13,7 @@ public class SearchMangaDTO {
     private String title;
     private String author;
     private List<String> genres;
+    private List<String> status;
+    private Long uploadedBy;
 }
 

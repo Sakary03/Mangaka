@@ -59,4 +59,12 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<UserFollow> followedManga;
+
+    @OneToMany(mappedBy = "uploadedBy")
+    @JsonIgnore
+    private List<Manga> uploadedManga;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<ReadingHistory> readingHistories;
 }

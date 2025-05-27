@@ -5,7 +5,11 @@ import com.graduation.mangaka.dto.request.SearchMangaDTO;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
 import com.graduation.mangaka.model.Manga;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
+import com.graduation.mangaka.model.TypeAndRole.MangaStatus;
+import com.graduation.mangaka.model.TypeAndRole.UserRole;
+import com.graduation.mangaka.model.User;
 import com.graduation.mangaka.repository.MangaRepository;
+import com.graduation.mangaka.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,7 @@ import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MangaService {
@@ -27,9 +32,23 @@ public class MangaService {
     @Autowired
     private MangaRepository mangaRepository;
 
+    @Autowired
+    private UserRepository userRepository;
     public Manga addManga(MangaRequestDTO mangaRequestDTO) {
         try {
+            if (mangaRequestDTO.getUserId() == null) {
+                throw new RuntimeException("User id is required");
+            }
+            final Long userId = mangaRequestDTO.getUserId();
+            final User user =  userRepository.findById(mangaRequestDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
             Manga manga = mangaRequestDTO.toManga();
+            if (user.getRole().equals(UserRole.USER)) {
+                manga.setUploadedBy(user);
+                manga.setStatus(MangaStatus.PENDING);
+            } else {
+                manga.setUploadedBy(user);
+                manga.setStatus(MangaStatus.APPROVED);
+            }
             return mangaRepository.save(manga);
         } catch (Exception e) {
             logger.error("Error while adding manga", e);
@@ -40,7 +59,10 @@ public class MangaService {
     public Manga updateManga(MangaRequestDTO mangaRequestDTO, Long id) {
         try {
             Manga manga = mangaRepository.findById(id).orElseThrow(() -> new RuntimeException("Manga not found"));
-
+            User user = userRepository.findById(mangaRequestDTO.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+            if (mangaRequestDTO.getUserId() != user.getId()) {
+                throw new RuntimeException("User not authorized to update this manga");
+            }
             if (mangaRequestDTO.getAuthor() != null) manga.setAuthor(mangaRequestDTO.getAuthor());
             if (mangaRequestDTO.getTitle() != null) manga.setTitle(mangaRequestDTO.getTitle());
             if (mangaRequestDTO.getOverview() != null) manga.setOverview(mangaRequestDTO.getOverview());
@@ -53,6 +75,11 @@ public class MangaService {
             }
             if (mangaRequestDTO.getBackgroundUrl() != null) manga.setBackgroundUrl(mangaRequestDTO.getBackgroundUrl());
             if (mangaRequestDTO.getPosterUrl() != null) manga.setPosterUrl(mangaRequestDTO.getPosterUrl());
+            if (user.getRole().equals(UserRole.USER)) {
+                manga.setStatus(MangaStatus.UPDATE);
+            } else {
+                manga.setStatus(MangaStatus.APPROVED);
+            }
             return mangaRepository.save(manga);
         } catch (Exception e) {
             logger.error("Error while updating manga", e);
@@ -63,7 +90,8 @@ public class MangaService {
     public String deleteManga(Long id) {
         Manga manga = mangaRepository.findById(id).orElseThrow(() -> new RuntimeException("Manga not found"));
         try {
-            mangaRepository.delete(manga);
+            manga.setStatus(MangaStatus.DELETED);
+            mangaRepository.save(manga);
             return "Manga deleted successfully";
         } catch (Exception e) {
             logger.error("Error while deleting manga", e);
@@ -82,35 +110,56 @@ public class MangaService {
         Specification<Manga> spec = buildSpecification(
                 searchMangaDTO.getTitle(),
                 searchMangaDTO.getAuthor(),
-                searchMangaDTO.getGenres()
+                searchMangaDTO.getGenres(),
+                searchMangaDTO.getStatus(),
+                searchMangaDTO.getUploadedBy()
         );
         Page<Manga> mangaPage = mangaRepository.findAll(spec, PageRequest.of(offset, limit));
         return mangaPage.getContent();
     }
 
-    private Specification<Manga> buildSpecification(String title, String author, List<String> genres) {
+    private Specification<Manga> buildSpecification(
+            String title,
+            String author,
+            List<String> genres,
+            List<String> statusList,
+            Long uploadedByUserId
+    ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (title != null && !title.isEmpty()) {
-                predicates.add(criteriaBuilder.like(
+            if (title != null && !title.isEmpty() && title.equals(author)) {
+                Predicate titlePredicate = criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("title")),
                         "%" + title.toLowerCase() + "%"
-                ));
-            }
+                );
 
-            if (author != null && !author.isEmpty()) {
-                predicates.add(criteriaBuilder.like(
+                Predicate authorPredicate = criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("author")),
-                        "%" + author.toLowerCase() + "%"
-                ));
+                        "%" + title.toLowerCase() + "%"
+                );
+
+                predicates.add(criteriaBuilder.or(titlePredicate, authorPredicate));
+            } else {
+                if (title != null && !title.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("title")),
+                            "%" + title.toLowerCase() + "%"
+                    ));
+                }
+
+                if (author != null && !author.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("author")),
+                            "%" + author.toLowerCase() + "%"
+                    ));
+                }
             }
 
             if (genres != null && !genres.isEmpty()) {
                 for (String genreStr : genres) {
                     try {
                         Genres genreEnum = Genres.valueOf(genreStr.toUpperCase());
-                        // Ensures that EACH genreEnum is a member of the genres collection
                         predicates.add(criteriaBuilder.isMember(genreEnum, root.get("genres")));
                     } catch (IllegalArgumentException e) {
                         logger.warn("Invalid genre provided: {}", genreStr);
@@ -118,9 +167,32 @@ public class MangaService {
                 }
             }
 
+            if (statusList != null && !statusList.isEmpty()) {
+                List<MangaStatus> validStatuses = statusList.stream()
+                        .map(s -> {
+                            try {
+                                return MangaStatus.valueOf(s.toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                logger.warn("Invalid manga status provided: {}", s);
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                if (!validStatuses.isEmpty()) {
+                    predicates.add(root.get("status").in(validStatuses));
+                }
+            }
+
+            if (uploadedByUserId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("uploadedBy").get("id"), uploadedByUserId));
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
 
 
     public Manga GetMangaById(Long id) {
@@ -128,6 +200,7 @@ public class MangaService {
     }
 
     public Manga IncreaseReadTimes(Long id) {
+        logger.info("Increase read times for manga id: {}", id);
         Manga manga = mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
         manga.setReadTimes(manga.getReadTimes()+1);
         return mangaRepository.save(manga);
@@ -136,5 +209,12 @@ public class MangaService {
     public List<Manga> SearchManga(SearchMangaDTO params) {
         if (params.getTitle() != null && !params.getTitle().isEmpty()) {}
         return null;
+    }
+
+    public Manga ChangeMangaStatus(Long id, String status) {
+        Manga manga = mangaRepository.findById(id).orElseThrow(()-> new RuntimeException("Manga not found"));
+        manga.setStatus(MangaStatus.valueOf(status.toUpperCase()));
+        mangaRepository.save(manga);
+        return manga;
     }
 }

@@ -59,4 +59,8 @@ public class MangaChapter {
             this.title = "Chapter "+ String.valueOf(this.chapterIndex);
         }
     }
+
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<ReadingHistory> readingHistories;
 }

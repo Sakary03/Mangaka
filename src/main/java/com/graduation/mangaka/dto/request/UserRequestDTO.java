@@ -25,7 +25,7 @@ public class UserRequestDTO {
         user.setUserName(this.username);
         user.setEmail(this.email);
         user.setDob(this.date);
-        user.setUserName(this.name);
+        user.setFullName(this.name);
         user.setAvatarUrl(this.avatar);
         user.setAddress(this.address);
         return user;
