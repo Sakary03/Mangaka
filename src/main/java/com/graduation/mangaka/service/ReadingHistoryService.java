@@ -6,11 +6,9 @@ import com.graduation.mangaka.repository.MangaChapterRepository;
 import com.graduation.mangaka.repository.MangaRepository;
 import com.graduation.mangaka.repository.ReadingHistoryRepository;
 import com.graduation.mangaka.repository.UserRepository;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service

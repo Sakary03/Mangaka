@@ -1,10 +1,11 @@
 package com.graduation.mangaka.service;
 
+import com.graduation.mangaka.dto.request.CommentRequestDTO;
 import com.graduation.mangaka.model.Comment;
 import com.graduation.mangaka.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.graduation.mangaka.dto.request.CommentRequestDTO;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

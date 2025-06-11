@@ -2,7 +2,6 @@ package com.graduation.mangaka.service;
 
 import com.graduation.mangaka.dto.request.MangaRequestDTO;
 import com.graduation.mangaka.dto.request.SearchMangaDTO;
-import com.graduation.mangaka.model.TypeAndRole.Genres;
 import com.graduation.mangaka.model.Manga;
 import com.graduation.mangaka.model.TypeAndRole.Genres;
 import com.graduation.mangaka.model.TypeAndRole.MangaStatus;
@@ -10,6 +9,7 @@ import com.graduation.mangaka.model.TypeAndRole.UserRole;
 import com.graduation.mangaka.model.User;
 import com.graduation.mangaka.repository.MangaRepository;
 import com.graduation.mangaka.repository.UserRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.criteria.Predicate;
 
 import java.util.*;
 
