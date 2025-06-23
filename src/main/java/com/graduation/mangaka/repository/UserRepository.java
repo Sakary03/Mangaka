@@ -16,4 +16,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     public Boolean existsByUserName(String username);
     public Page<User> findAll(Pageable pageable);
     public User getUserById(long id);
+    public User findByPasswordResetToken(String token);
 }

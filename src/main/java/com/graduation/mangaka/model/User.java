@@ -51,6 +51,12 @@ public class User {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+    
+    @Column(nullable = true)
+    private String passwordResetToken;
+    
+    @Column(nullable = true)
+    private Date passwordResetTokenExpiry;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

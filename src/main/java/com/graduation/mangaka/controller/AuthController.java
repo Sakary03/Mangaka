@@ -1,7 +1,9 @@
 package com.graduation.mangaka.controller;
 
 import com.graduation.mangaka.dto.request.ChangePasswordRequestDTO;
+import com.graduation.mangaka.dto.request.ForgotPasswordRequestDTO;
 import com.graduation.mangaka.dto.request.LoginRequest;
+import com.graduation.mangaka.dto.request.ResetPasswordRequestDTO;
 import com.graduation.mangaka.dto.request.SignupRequest;
 import com.graduation.mangaka.dto.response.LoginResponseDTO;
 import com.graduation.mangaka.repository.UserRepository;
@@ -10,6 +12,7 @@ import com.graduation.mangaka.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,8 +20,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("http://localhost:5173")
 @RequestMapping("/auth")
 public class AuthController {
     @Autowired
@@ -63,5 +69,37 @@ public class AuthController {
     @PutMapping("/{id}/change-password")
     public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordRequestDTO requestDTO) {
         return ResponseEntity.ok().body(userService.changePassword(id, requestDTO));
+    }
+    
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO requestDTO) {
+        try {
+            boolean result = userService.createPasswordResetTokenForUser(requestDTO.getEmail());
+            
+            if (result) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Password reset instructions have been sent to your email");
+                return ResponseEntity.ok().body(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email not found");
+            }
+        } catch (MessagingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error sending password reset email: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO requestDTO) {
+        boolean result = userService.resetPassword(requestDTO.getToken(), requestDTO.getNewPassword());
+        
+        if (result) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Password has been reset successfully");
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid or expired token");
+        }
     }
 }

@@ -61,6 +61,7 @@ public class SecurityConfiguration {
             "/comments/**",
             "/user/**",
             "/ws/**",
+            "/auth/**"
     };
     @Bean
     public SecurityFilterChain filterChain(
@@ -72,6 +73,7 @@ public class SecurityConfiguration {
                         authz -> authz
                                 .requestMatchers("/").permitAll()
                                 .requestMatchers("/", "/auth/login").permitAll()
+                                .requestMatchers("/", "/auth/**").permitAll()
                                 .requestMatchers("/user").permitAll()
                                 .requestMatchers("/swagger-ui").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/swagger-resources/**").permitAll()

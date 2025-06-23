@@ -23,6 +23,7 @@ public class EmailService {
         mailSender.send(message);
         System.out.println("Email sent");
     }
+    
     public void registerCompleteEmail(User user) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -46,5 +47,36 @@ public class EmailService {
         helper.setText(content, true);
         mailSender.send(message);
         System.out.println("Email sent");
+    }
+    
+    public void sendPasswordResetEmail(User user, String resetToken) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom("sharkkary@gmail.com");
+        helper.setTo(user.getEmail());
+        helper.setSubject("Mangaka - Password Reset Request");
+        
+        // Frontend URL with the reset token as a query parameter
+        String resetUrl = "http://localhost:5173/reset-password?token=" + resetToken;
+        
+        String content = "<html>\n" +
+                "                <body>\n" +
+                "                    <h2>Hello, " + user.getFullName() + "!</h2>\n" +
+                "                    <p>We received a request to reset your password. If you didn't make this request, you can ignore this email.</p>\n" +
+                "                    <p>To reset your password, please click the button below:</p>\n" +
+                "                    <p style=\"text-align: center;\">\n" +
+                "                        <a href=\"" + resetUrl + "\" style=\"display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;\">Reset Password</a>\n" +
+                "                    </p>\n" +
+                "                    <p>Or copy and paste the following link into your browser:</p>\n" +
+                "                    <p>" + resetUrl + "</p>\n" +
+                "                    <p>This link will expire in 30 minutes for security reasons.</p>\n" +
+                "                    <p>Best regards,</p>\n" +
+                "                    <p><strong>The Mangaka Team</strong></p>\n" +
+                "                </body>\n" +
+                "                </html>";
+        
+        helper.setText(content, true);
+        mailSender.send(message);
+        System.out.println("Password reset email sent to " + user.getEmail());
     }
 }
