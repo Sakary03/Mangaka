@@ -33,15 +33,23 @@ public class MangaController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> UpdateManga(@ModelAttribute MangaRequestDTO mangaRequestDTO,
-                                         @RequestParam("poster")MultipartFile poster,
-                                         @RequestParam("background") MultipartFile background,
+                                         @RequestParam(value = "poster", required = false) MultipartFile poster,
+                                         @RequestParam(value = "background", required = false) MultipartFile background,
                                          @PathVariable Long id) {
-        if (poster!=null) mangaRequestDTO.setPosterUrl(cloudinaryService.uploadImage(poster).getUrl());
-        System.out.println("Upload poster successfully");
-        if (background!=null) mangaRequestDTO.setBackgroundUrl(cloudinaryService.uploadImage(background).getUrl());
-        System.out.println("Upload background successfully");
+
+        if (poster != null && !poster.isEmpty()) {
+            mangaRequestDTO.setPosterUrl(cloudinaryService.uploadImage(poster).getUrl());
+            System.out.println("Upload poster successfully");
+        }
+
+        if (background != null && !background.isEmpty()) {
+            mangaRequestDTO.setBackgroundUrl(cloudinaryService.uploadImage(background).getUrl());
+            System.out.println("Upload background successfully");
+        }
+        System.out.println("Update manga with id: " + id);
         return ResponseEntity.ok().body(mangaService.updateManga(mangaRequestDTO, id));
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> DeleteManga(@PathVariable Long id) {

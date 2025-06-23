@@ -1,6 +1,10 @@
 package com.graduation.mangaka.service;
 
 import com.graduation.mangaka.dto.request.ReadingHistoryDTO;
+import com.graduation.mangaka.dto.response.ChapterDTO;
+import com.graduation.mangaka.dto.response.MangaDTO;
+import com.graduation.mangaka.dto.response.ReadingHistoryResponseDTO;
+import com.graduation.mangaka.dto.response.UserDTO;
 import com.graduation.mangaka.model.ReadingHistory;
 import com.graduation.mangaka.repository.MangaChapterRepository;
 import com.graduation.mangaka.repository.MangaRepository;
@@ -36,14 +40,50 @@ public class ReadingHistoryService {
         return readingHistory;
     }
 
-    public List<ReadingHistory> GetReadingHistory(ReadingHistoryDTO readingHistoryDTO) {
-        if (readingHistoryDTO.getUserId()==null) {
+    public List<ReadingHistoryResponseDTO> GetReadingHistory(ReadingHistoryDTO readingHistoryDTO) {
+        List<ReadingHistory> histories;
+
+        if (readingHistoryDTO.getUserId() == null) {
             throw new RuntimeException("UserId is null");
         }
-        if (readingHistoryDTO.getMangaId()==null) {
-            return readingHistoryRepository.findByUserIdOrderByCreatedAtDesc(readingHistoryDTO.getUserId());
+
+        if (readingHistoryDTO.getMangaId() == null) {
+            histories = readingHistoryRepository.findByUserIdOrderByCreatedAtDesc(readingHistoryDTO.getUserId());
         } else {
-            return readingHistoryRepository.findByMangaIdAndUserIdOrderByCreatedAt(readingHistoryDTO.getMangaId(), readingHistoryDTO.getUserId());
+            histories = readingHistoryRepository.findByMangaIdAndUserIdOrderByCreatedAt(
+                    readingHistoryDTO.getMangaId(), readingHistoryDTO.getUserId());
         }
+
+        return histories.stream().map(this::convertToDTO).toList();
     }
+
+
+    private ReadingHistoryResponseDTO convertToDTO(ReadingHistory history) {
+        ReadingHistoryResponseDTO dto = new ReadingHistoryResponseDTO();
+        dto.setId(history.getId());
+        dto.setCreatedAt(history.getCreatedAt());
+
+        // User DTO
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(history.getUser().getId());
+        userDTO.setUsername(history.getUser().getFullName());
+        dto.setUser(userDTO);
+
+        // Manga DTO
+        MangaDTO mangaDTO = new MangaDTO();
+        mangaDTO.setId(history.getManga().getId());
+        mangaDTO.setTitle(history.getManga().getTitle());
+        dto.setManga(mangaDTO);
+
+        // Chapter DTO
+        ChapterDTO chapterDTO = new ChapterDTO();
+        chapterDTO.setId(history.getChapter().getId());
+        chapterDTO.setTitle(history.getChapter().getTitle());
+        chapterDTO.setNumber(history.getChapter().getChapterIndex());
+        dto.setChapter(chapterDTO);
+
+        return dto;
+    }
+
+
 }
