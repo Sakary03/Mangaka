@@ -1,6 +1,6 @@
 package com.graduation.mangaka.controller;
 
-
+import org.springframework.security.core.Authentication;
 import com.graduation.mangaka.dto.request.MangaRequestDTO;
 import com.graduation.mangaka.dto.request.SearchMangaDTO;
 import com.graduation.mangaka.model.Manga;
@@ -60,14 +60,16 @@ public class MangaController {
     public ResponseEntity<?> GetManga(@RequestParam("offset") int offset,
                                       @RequestParam("limit") int limit,
                                       @RequestParam("sortby") String field,
-                                      @RequestParam("isAsc") Boolean isAsc) {
-        return ResponseEntity.ok().body(mangaService.getAllManga(offset, limit, field, isAsc));
+                                      @RequestParam("isAsc") Boolean isAsc,
+                                      Authentication authentication) {
+        return ResponseEntity.ok().body(mangaService.getAllManga(offset, limit, field, isAsc, authentication));
     }
     @GetMapping("/search")
     public ResponseEntity<?> SearchManga(@ModelAttribute SearchMangaDTO searchMangaDTO,
                                          @RequestParam("offset") int offset,
-                                         @RequestParam("limit") int limit) {
-        return ResponseEntity.ok().body(mangaService.searchManga(searchMangaDTO, offset, limit));
+                                         @RequestParam("limit") int limit,
+                                         Authentication authentication) {
+        return ResponseEntity.ok().body(mangaService.searchManga(searchMangaDTO, offset, limit, authentication));
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> GetMangaById(@PathVariable Long id) {

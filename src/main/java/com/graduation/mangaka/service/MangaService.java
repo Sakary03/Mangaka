@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -99,8 +100,7 @@ public class MangaService {
     public String deleteManga(Long id) {
         Manga manga = mangaRepository.findById(id).orElseThrow(() -> new RuntimeException("Manga not found"));
         try {
-            manga.setStatus(MangaStatus.DELETED);
-            mangaRepository.save(manga);
+            mangaRepository.delete(manga);
             return "Manga deleted successfully";
         } catch (Exception e) {
             logger.error("Error while deleting manga", e);
@@ -108,23 +108,74 @@ public class MangaService {
         }
     }
 
-    public List<Manga> getAllManga(int offset, int limit, String field, boolean isAsc) {
+    public List<Manga> getAllManga(int offset, int limit, String field, boolean isAsc, Authentication authentication) {
         Page<Manga> mangaPage;
-        if (isAsc) mangaPage = mangaRepository.findAll(PageRequest.of(offset, limit, Sort.by(field).ascending()));
-        else mangaPage = mangaRepository.findAll(PageRequest.of(offset, limit, Sort.by(field).descending()));
+        
+        boolean isAdmin = isUserAdmin(authentication);
+        
+        if (isAsc) {
+            if (isAdmin) {
+                mangaPage = mangaRepository.findAll(PageRequest.of(offset, limit, Sort.by(field).ascending()));
+            } else {
+                mangaPage = mangaRepository.findByStatus(MangaStatus.APPROVED, PageRequest.of(offset, limit, Sort.by(field).ascending()));
+            }
+        } else {
+            if (isAdmin) {
+                mangaPage = mangaRepository.findAll(PageRequest.of(offset, limit, Sort.by(field).descending()));
+            } else {
+                mangaPage = mangaRepository.findByStatus(MangaStatus.APPROVED, PageRequest.of(offset, limit, Sort.by(field).descending()));
+            }
+        }
+        
         return mangaPage.getContent();
     }
 
-    public List<Manga> searchManga(SearchMangaDTO searchMangaDTO, int offset, int limit) {
-        Specification<Manga> spec = buildSpecification(
-                searchMangaDTO.getTitle(),
-                searchMangaDTO.getAuthor(),
-                searchMangaDTO.getGenres(),
-                searchMangaDTO.getStatus(),
-                searchMangaDTO.getUploadedBy()
-        );
+    public List<Manga> searchManga(SearchMangaDTO searchMangaDTO, int offset, int limit, Authentication authentication) {
+        boolean isAdmin = isUserAdmin(authentication);
+        Specification<Manga> spec;
+        if (searchMangaDTO.getUploadedBy() != null) {
+            spec = buildSpecification(
+                    searchMangaDTO.getTitle(),
+                    searchMangaDTO.getAuthor(),
+                    searchMangaDTO.getGenres(),
+                    searchMangaDTO.getStatus(),
+                    searchMangaDTO.getUploadedBy(),
+                    true
+            );
+        } else {
+            spec = buildSpecification(
+                    searchMangaDTO.getTitle(),
+                    searchMangaDTO.getAuthor(),
+                    searchMangaDTO.getGenres(),
+                    searchMangaDTO.getStatus(),
+                    searchMangaDTO.getUploadedBy(),
+                    isAdmin
+            );
+        }
         Page<Manga> mangaPage = mangaRepository.findAll(spec, PageRequest.of(offset, limit));
         return mangaPage.getContent();
+    }
+
+    private boolean isUserAdmin(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email);
+        
+        return user != null && user.getRole() == UserRole.ADMIN;
+    }
+
+    private Long userIdByAuthenToken(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email);
+
+        return user.getId();
     }
 
     private Specification<Manga> buildSpecification(
@@ -132,10 +183,16 @@ public class MangaService {
             String author,
             List<String> genres,
             List<String> statusList,
-            Long uploadedByUserId
+            Long uploadedByUserId,
+            boolean isAdmin
     ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // Add status filter for non-admin users
+            if (!isAdmin) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), MangaStatus.APPROVED));
+            }
 
             if (title != null && !title.isEmpty() && title.equals(author)) {
                 Predicate titlePredicate = criteriaBuilder.like(
@@ -176,7 +233,8 @@ public class MangaService {
                 }
             }
 
-            if (statusList != null && !statusList.isEmpty()) {
+            // Only allow admin users to filter by status in search
+            if (statusList != null && !statusList.isEmpty() && isAdmin) {
                 List<MangaStatus> validStatuses = statusList.stream()
                         .map(s -> {
                             try {

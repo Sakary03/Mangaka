@@ -42,8 +42,7 @@ public class CommentService {
 
     public void deleteComment(Long id) {
         commentRepository.findById(id).ifPresent(comment -> {
-            comment.setDeleted(true); // soft delete
-            commentRepository.save(comment);
+            commentRepository.delete(comment);
         });
     }
 }
